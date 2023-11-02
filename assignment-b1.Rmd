@@ -1,0 +1,269 @@
+---
+title: "Making a Function"
+author: "Nicola Rammell"
+output: 
+  github_document:
+    toc: true 
+---
+
+## Exercise 1: Make a Fuction (25 points)
+
+**In this exercise, you’ll be making a function and fortifying it. The function need not be complicated. The function need not be “serious”, but shouldn’t be nonsense.**
+
+For this assignment, I will be making a plot function. This function will be based closely off my STAT 545A Mini Data Analysis, which I completed using the "Vancouver Street Tree Dataset" from the `datateachr` package. 
+
+In particular, in the Mini Data Analysis Deliverable 1, I generated a plot using data for a specific tree genus of interest. The plot showed the distribution of tree diameter values for each species within a genus. In the Mini Data Analysis, I discussed that exploring this pattern for only genus was a major limitation, and I am interested in being able to quickly generate the same plot for multiple genera of interest.  
+
+In this exercise, I will explore how to make a function that can easily repeat a similar plot for any tree genus (or other data!). I would like to make this function because I am not only interested in plotting data for one genus; I would like the ability to quickly explore a plot unique to any genus of interest. 
+
+This would be a useful function because otherwise, a large code chunk would need to be repeated to produce each plot. If the data analysis requires a separate plot for several genera of interest, this would make the script long and it would be easy to make errors in the copy, paste, and edit workflow. 
+
+The function that I would like to make will take in a dataframe, manipulate the data, and then plot it. Specifically, the function will reorder at categorical variable by a numeric variable, and plot the results in the form of a boxplot that shows categories arranged from values of highest to lowest. This allows us to quickly visualize the overall pattern and helps us identify which category has the largest values! In addition, this function includes a built-in title feature so you will be required to keep track of exactly what data you are plotting. 
+
+```{r}
+# load libraries
+library(tidyverse)
+library(rlang)   
+
+# load data
+library(datateachr)
+library(palmerpenguins)
+```
+
+First, we'll create the basic function. Simply, the function generates a label with the title of your plot, orders your numerical variable by your categorical variable, and creates a boxplot with the results. The function is named as a verb: `order_boxplot`. 
+
+```{r}
+# create function to order and plot a numerical variable by a categorical one
+
+order_boxplot <- function(df, x, y, title) {
+  label <- rlang::englue("{{ title }} {{ y }}")         # label = title + y-variable
+  
+  df %>%
+    mutate({{ x }} := fct_reorder({{ x }}, {{ y }})) %>% # order categorical variable
+    ggplot(aes(x = {{ x }}, y = {{ y }})) +              # take ordered variables
+    geom_boxplot() +                                     # plot the results
+    coord_flip() +                                       # then flip the axes
+    xlab("") + ylab("") +                                # remove axes labels 
+    labs(title = label)                                  # add title + y-variable
+}
+```
+
+Now, we specify two more features: (1) how to deal with missing values; and (2) how to ensure the input variables are of the correct class. Remember, this function plots a *numeric* variable, `y`, by a *categorical* variable, `x`. As well, we will specify that NA values should be removed. 
+
+```{r}
+# improve the function by adding two features
+
+order_boxplot <- function(df, x, y, title, 
+                          na.rm = TRUE) {               # remove NA values
+  
+    if(!is.character(df %>% pull({{ x }}))) {           # check x is categorical
+    stop('Please provide a categorical input!\n',
+         'You have provided an object of class:', class(df %>% pull({{ x }}))[1])
+  }  
+  
+    if(!is.numeric(df %>% pull({{ y }}))) {             # check y is numerical      
+    stop('Please provide a numeric input!\n',
+         'You have provided an object of class:', class(df %>% pull({{ y }}))[1])
+  }
+  
+  label <- rlang::englue("{{ title }} {{ y }}")         # label = title + variable 
+  
+  df %>%
+    mutate({{ x }} := fct_reorder({{ x }}, {{ y }})) %>% # orders categorical variable
+    ggplot(aes(x = {{ x }}, y = {{ y }})) +              # takes ordered variables
+    geom_boxplot() +                                     # and plots the results
+    coord_flip() +                                       # flips the axes
+    xlab("") + ylab("") +                                # removes axes labels 
+    labs(title = label)                                  # adds title + variable
+}
+```
+
+
+## Exercise 2: Document your Function (20 points)
+
+**In the same code chunk where you made your function, document the function using roxygen2 tags.**
+
+Next, I will add the documentation to the function. 
+
+```{r}
+#' @title
+#' Order boxplot 
+#' 
+#' @description
+#' `order_boxplot` returns a figure with boxplots ordered from greatest to least
+#'
+#' @details
+#' This is a generic function that takes any categorical x-variable and any 
+#' numerical y-variable as input. The function will order the categorical variable
+#' by the numeric one, and then generate a figure with boxplots ordered from values 
+#' of greatest to least. The function also takes a 'title' as input, which will
+#' be specified by the user to describe the x-variable categories.  
+#' 
+#' @param df     a dataframe (e.g. tibble)
+#' @param x      specify the categorical variable to be plotted
+#' @param y      specify the numeric variable to be plotted
+#' @param title  provide a title that describes your categorical variable  
+#' 
+#' @return 
+#' This function will return a plot. 
+#' 
+#' @examples
+#' diamonds %>% 
+#'   order_boxplot(cut, price, Diamond) 
+#' 
+#' #' penguins %>% 
+#'   order_boxplot(species, body_mass_g, Penguin)
+#'   
+order_barplot <- function(df, x, y, title, 
+                          na.rm = TRUE) {               # remove NA values
+  
+    if(!is.character(df %>% pull({{ x }}))) {           # check x is categorical
+    stop('Please provide a categorical input!\n',
+         'You have provided an object of class:', class(df %>% pull({{ x }}))[1])
+  }  
+  
+    if(!is.numeric(df %>% pull({{ y }}))) {             # check y is numerical      
+    stop('Please provide a numeric input!\n',
+         'You have provided an object of class:', class(df %>% pull({{ y }}))[1])
+  }
+  
+  label <- rlang::englue("{{ title }} {{ y }}")         # label = title 
+  
+  df %>%
+    mutate({{ x }} := fct_reorder({{ x }}, {{ y }})) %>% # orders categorical variable
+    ggplot(aes(x = {{ x }}, y = {{ y }})) +              # takes ordered variables
+    geom_boxplot() +                                     # and plots the results
+    coord_flip() +                                       # flips the axes
+    xlab("") + ylab("") +                                # removes axes labels 
+    labs(title = label)                                  # adds title + variable
+}
+```
+
+
+## Exercise 3: Include Examples (15 points)
+
+**Demonstrate the usage of your function with a few examples. Use one or more new code chunks, describing what you’re doing.**
+
+Now, let's try some examples. I will demonstrate using the function on 4 different datasets. 
+
+First, I will demonstrate using the function on the `vancouver_trees` dataset from the `datateachr` package, which is what I originally designed the function for. Specifically, I would like to see how the function works to explore patterns in a number of different tree genera! 
+
+
+```{r}
+# try the function on the Birch genus subset from the vancouver_trees data
+vancouver_trees %>%
+  filter(genus_name == "BETULA") %>%
+  order_boxplot(common_name, diameter, Birch)   # specify "Birch" title
+
+# or, customize it (using a preferred theme, add axis label)
+vancouver_trees %>%
+  filter(genus_name == "BETULA") %>%
+  order_boxplot(common_name, diameter, Birch) + # specify "Birch" title
+  theme_classic() + 
+  ylab("DBH")
+```
+
+```{r}
+# try the function on the Ash genus subset from the vancouver_trees data
+vancouver_trees %>%
+  filter(genus_name == "FRAXINUS") %>%
+  order_boxplot(common_name, diameter, Ash)     # specifiy "Ash" title
+
+# or, customize it (remove those 3 extreme outliers from the plot)
+vancouver_trees %>%
+  filter(genus_name == "FRAXINUS") %>%
+  order_boxplot(common_name, diameter, Ash) +   # specify "Ash" title
+  ylim(0, 45) +                                 # removes 3 outliers from plot
+  theme_classic() + 
+  ylab("DBH")
+``` 
+
+```{r}
+# try the function on the Oak genus subset from the vancouver_trees data
+vancouver_trees %>%
+  filter(genus_name == "QUERCUS") %>%
+  order_boxplot(common_name, diameter, Oak) # specify "Oak" title
+
+# or, customize it (remove those 2 extreme outliers from the plot)
+vancouver_trees %>%
+  filter(genus_name == "QUERCUS") %>%
+  order_boxplot(common_name, diameter, Oak) +   # specify "Oak" title
+  ylim(0, 60) +                                 # removes 2 outliers from plot
+  theme_classic() + 
+  ylab("DBH")
+```
+
+Second, I will demonstrate using the function on the `diamonds` dataset from the `ggplot2` package. This will show that the function can be used on any dataset (that has both categorical and numeric data). Additionally, I will demonstrate the use of error trapping (and correcting) the incorrect variable class type using this dataset. 
+
+```{r, error = TRUE}
+# try the function on the diamonds data
+diamonds %>%
+  order_boxplot(cut, price, Diamond) # specify "Diamond" title
+```
+```{r}
+# check the data structure
+str(diamonds)
+```
+
+As seen in the above example, the diamonds data has the `clarity` variable coded as an ordered factor. The function is expecting a categorical x-variable. So, let's fix this problem, and then try the function again:
+
+```{r}
+# make the ordered factor variable a character variable and then run the function
+diamonds %>%
+  mutate(cut = as.character(cut)) %>%  # fix variable class
+  order_boxplot(cut, price, Diamond)   # and then run the function 
+
+# or, customize the plot with a theme and labels 
+diamonds %>%
+  mutate(cut = as.character(cut)) %>%  
+  order_boxplot(cut, price, Diamond) +  
+  theme_classic() +                   
+  xlab("Cut quality") + ylab("Price ($ US)")
+```
+
+As seen above, this corrected the problem, as expected! And, by the looks of the plot... there is no significant difference in the price of diamonds based on the quality of the cut. 
+
+Next, I will demonstrate the use of the function on the `mpg` dataset from the `ggplot2` package. 
+
+```{r}
+# first, confirm desired x-variable is categorical and y-variable is numeric
+str(mpg)
+
+# then, try the function on the mpg data, customizing as you like!
+mpg %>%
+  mutate("displacement" = displ) %>%           # rename displ to displacement
+  order_boxplot(model, displacement, Model) +  # run the function
+  ylab("Engine displacement (litres)") +       # add y-lab
+  theme_classic()                              # add classic theme
+```
+
+Lastly, I will try the function on the `penguins` data from the `palmerpenguins` package. 
+
+```{r, error = TRUE}
+# try the function on the penguins data
+penguins %>%
+  order_boxplot(species, body_mass_g, Penguin) # specify "Penguin" title
+```
+
+Again, we receive the error that our categorical variable was not coded as categorical, but this time, as a factor. Correct this error and try again:
+
+```{r}
+# correct variable class and customize as you like!
+penguins %>%
+  mutate(species = as.character(species)) %>%  # correct variable class
+  mutate(mass = body_mass_g) %>%               # rename y-variable
+  order_boxplot(species, mass, Penguin) +      # run the function
+  ylab("Body mass (g)") +                      # customize y-lab
+  theme_classic()                              # customize theme
+```
+
+The above boxplot was created by customizing the labels and theme, but the code is still much more concise using the function than if we were to write out the full code required to make the plot! And, much more difficult to make a mistake, or not complete the re-ordering in the same way each time. Also notice, 2 NA rows were removed to make this plot. 
+
+## Exercise 4: Test the Function (25 points)
+
+**Write formal tests for your function. You should use at least three non-redundant uses of an expect_() function from the testthat package, and they should be contained in a test_that() function (or more than one). They should all pass.**
+
+
+
+
+
