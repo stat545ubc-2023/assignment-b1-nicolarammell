@@ -5,8 +5,26 @@ output:
   github_document:
     toc: true 
 ---
+## Introduction
 
-## Exercise 1: Make a Fuction (25 points)
+This STAT 545B Assignment B1 covers how to make, fortify, and test a function. 
+
+### Load libraries
+
+First, load the packages we will use in this assignment. 
+
+```{r, error = FALSE, warning = FALSE}
+# load libraries
+library(tidyverse)
+library(rlang)  
+library(testthat)
+
+# load datasets
+library(datateachr)
+library(palmerpenguins)
+```
+
+## Exercise 1: Make a Function (25 points)
 
 **In this exercise, you’ll be making a function and fortifying it. The function need not be complicated. The function need not be “serious”, but shouldn’t be nonsense.**
 
@@ -19,16 +37,6 @@ In this exercise, I will explore how to make a function that can easily repeat a
 This would be a useful function because otherwise, a large code chunk would need to be repeated to produce each plot. If the data analysis requires a separate plot for several genera of interest, this would make the script long and it would be easy to make errors in the copy, paste, and edit workflow. 
 
 The function that I would like to make will take in a dataframe, manipulate the data, and then plot it. Specifically, the function will reorder at categorical variable by a numeric variable, and plot the results in the form of a boxplot that shows categories arranged from values of highest to lowest. This allows us to quickly visualize the overall pattern and helps us identify which category has the largest values! In addition, this function includes a built-in title feature so you will be required to keep track of exactly what data you are plotting. 
-
-```{r}
-# load libraries
-library(tidyverse)
-library(rlang)   
-
-# load data
-library(datateachr)
-library(palmerpenguins)
-```
 
 First, we'll create the basic function. Simply, the function generates a label with the title of your plot, orders your numerical variable by your categorical variable, and creates a boxplot with the results. The function is named as a verb: `order_boxplot`. 
 
@@ -73,7 +81,7 @@ order_boxplot <- function(df, x, y, title,
     ggplot(aes(x = {{ x }}, y = {{ y }})) +              # takes ordered variables
     geom_boxplot() +                                     # and plots the results
     coord_flip() +                                       # flips the axes
-    xlab("") + ylab("") +                                # removes axes labels 
+    xlab("") + ylab("") +                                # default no axes labels 
     labs(title = label)                                  # adds title + variable
 }
 ```
@@ -134,11 +142,10 @@ order_barplot <- function(df, x, y, title,
     ggplot(aes(x = {{ x }}, y = {{ y }})) +              # takes ordered variables
     geom_boxplot() +                                     # and plots the results
     coord_flip() +                                       # flips the axes
-    xlab("") + ylab("") +                                # removes axes labels 
+    xlab("") + ylab("") +                                # default no axes labels 
     labs(title = label)                                  # adds title + variable
 }
 ```
-
 
 ## Exercise 3: Include Examples (15 points)
 
@@ -263,7 +270,61 @@ The above boxplot was created by customizing the labels and theme, but the code 
 
 **Write formal tests for your function. You should use at least three non-redundant uses of an expect_() function from the testthat package, and they should be contained in a test_that() function (or more than one). They should all pass.**
 
+In the last exercise, we'll use the `testthat` package to test the function. I will first test that there is no error when everything is input correctly using `expect_no_error`:
 
+```{r}
+# test there is no error when everything is input correctly 
+test_that("Test 1: working order_boxplot function", {
+  expect_no_error(order_boxplot(vancouver_trees, common_name, diameter, title))
+})
+```
 
+The above preliminary test shows that there's no error with these inputs: they meet the function's requirements. 
+
+Next, I will test that an error *is* thrown when the input variables are not of the correct class using `expect_error`.
+
+```{r}
+# make variables of the wrong class to use in the next test
+x <- as.factor(vancouver_trees$common_name) 
+str(x) # function is expecting the x-variable to be a character, not a factor
+
+y <- as.character(vancouver_trees$diameter)
+str(y) # function is expecting the y-variable to be numeric, not a character
+```
+
+```{r}
+# now, run the test using variables of the wrong class and check you get an error 
+test_that("Test 2: incorrect variable class in order_boxplot function", {
+  expect_error(order_boxplot(vancouver_trees, x, diameter, Tree))
+  expect_error(order_boxplot(vancouver_trees, common_name, y, Tree))
+})
+```
+
+Now, we can see that the function *does* throw an error when the variables are input in the wrong class. This first test, using `expect_error`, shows that when either the `x` or `y` variables are not stored as the correct class, we get an error, as expected. 
+
+Next, I will test that a particular error message is supplied if the user forgets to specify a title using `expect_error`. This is important because as seen above in the `vancouver_trees` example, we may have many plots and want each one labelled according to which data went into the plot. 
+
+```{r}
+test_that("Test 3: missing title in order_boxplot function", {
+  expect_error(order_boxplot(vancouver_trees, common_name, diameter), "`title` is absent but must be supplied")
+})
+```
+
+Next, using `expect_is` test that the function does indeed create an S3: gg object!
+
+```{r}
+test_that("Test 4: testing class type of order_boxplot function",{
+  myplot <- order_boxplot(vancouver_trees, common_name, diameter, Tree)
+  expect_is(myplot, "gg")
+})
+```
+
+Finally, you could also achieve a similar result using the `expect_equal` function. 
+
+```{r}
+test_that("Test 5: testing class type of order_boxplot function", {
+  expect_equal(class(order_boxplot(vancouver_trees, common_name, diameter, Tree))[1], "gg")
+})
+```
 
 
