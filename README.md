@@ -1,7 +1,7 @@
 # STAT 545B: Assignment B1
 
 **Author**: Nicola Rammell\
-**Contact**: [rammell\@student.ubc.ca](mailto:rammell@student.ubc.ca){.email}
+**Contact**: rammell@student.ubc.ca
 
 The University of British Columbia\
 Fall 2023

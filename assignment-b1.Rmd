@@ -13,7 +13,7 @@ This STAT 545B Assignment B1 covers how to make, fortify, and test a function.
 
 First, load the packages we will use in this assignment. 
 
-```{r, error = FALSE, warning = FALSE}
+```{r, warning = FALSE}
 # load libraries
 library(tidyverse)
 library(rlang)  
@@ -36,7 +36,7 @@ In this exercise, I will explore how to make a function that can easily repeat a
 
 This would be a useful function because otherwise, a large code chunk would need to be repeated to produce each plot. If the data analysis requires a separate plot for several genera of interest, this would make the script long and it would be easy to make errors in the copy, paste, and edit workflow. 
 
-The function that I would like to make will take in a dataframe, manipulate the data, and then plot it. Specifically, the function will reorder at categorical variable by a numeric variable, and plot the results in the form of a boxplot that shows categories arranged from values of highest to lowest. This allows us to quickly visualize the overall pattern and helps us identify which category has the largest values! In addition, this function includes a built-in title feature so you will be required to keep track of exactly what data you are plotting. 
+The function that I would like to make will take in a dataframe, manipulate the data, and then plot it. Specifically, the function will reorder a categorical variable by a numeric variable, and plot the results in the form of a boxplot that shows categories arranged from values of highest to lowest. This allows us to quickly visualize the overall pattern and helps us identify which category has the largest values! In addition, this function includes a built-in title feature so you will be required to keep track of exactly what data you are plotting. 
 
 First, we'll create the basic function. Simply, the function generates a label with the title of your plot, orders your numerical variable by your categorical variable, and creates a boxplot with the results. The function is named as a verb: `order_boxplot`. 
 
@@ -58,7 +58,7 @@ order_boxplot <- function(df, x, y, title) {
 
 Now, we specify two more features: (1) how to deal with missing values; and (2) how to ensure the input variables are of the correct class. 
 
-This function specifically plots a *numeric* variable, `y`, by a *categorical* variable, `x`, so we will add an error trap with the input variables are not of the correct class. As for missing values, we will specify that NA values should be removed -- but no siliently! We want missing values to be removed *with* a warning that this has occured -- telling us exactly how many rows were removed in making the plot so that we can check that makes sense. This will be specified in the `fct_reorder` part of the function as .na_rm = NULL (this removes NAs but generates a warning). We are doing this because we are just plotting one variable by a categorical one, so rows that are missing either piece of information should always be removed. 
+This function specifically plots a *numeric* variable, `y`, by a *categorical* variable, `x`, so we will add an error trap with the input variables are not of the correct class. As for missing values, we will specify that NA values should be removed -- but not silently! We want missing values to be removed *with* a warning that this has occurred -- telling us exactly how many rows were removed in making the plot so that we can check that makes sense. This will be specified in the `fct_reorder` part of the function as .na_rm = NULL (this removes NAs but generates a warning). We are doing this because we are just plotting one variable by a categorical one, so rows that are missing either piece of information should be removed. 
 
 ```{r}
 # improve the function by adding two features
@@ -88,7 +88,6 @@ order_boxplot <- function(df, x, y, title) {
 }
 ```
 
-
 ## Exercise 2: Document your Function (20 points)
 
 **In the same code chunk where you made your function, document the function using roxygen2 tags.**
@@ -100,13 +99,13 @@ Next, I will add the documentation to the function.
 #' Order boxplot 
 #' 
 #' @description
-#' `order_boxplot` returns a figure with boxplots ordered from greatest to least
+#' `order_boxplot` returns a ggplot figure with boxplots ordered from greatest to least.
 #'
 #' @details
 #' This is a generic function that takes any categorical x-variable and any 
 #' numerical y-variable as input. The function will order the categorical variable
 #' by the numeric one, and then generate a figure with boxplots ordered from values 
-#' of greatest to least. The function also takes a 'title' as input, which is 
+#' of greatest to least. The function also takes a title as input, which is 
 #' partially specified by the user and partially generated automatically based on
 #' the variable name from the dataframe.  
 #' 
@@ -178,7 +177,7 @@ vancouver_trees %>%
 # try the function on the Ash genus subset from the vancouver_trees data
 vancouver_trees %>%
   filter(genus_name == "FRAXINUS") %>%
-  order_boxplot(common_name, diameter, Ash)     # specifiy "Ash" title
+  order_boxplot(common_name, diameter, Ash)     # specify "Ash" title
 ```
 
 ```{r Fig 4}
@@ -264,7 +263,7 @@ penguins %>%
   order_boxplot(species, body_mass_g, Penguin) # specify "Penguin" title
 ```
 
-Again, we receive the error that our categorical variable was not coded as categorical, but this time, as a factor. Correct this error and try again:
+Again, we receive the error that our categorical variable was not coded as a character, but as a factor. Correct this error and try again:
 
 ```{r Fig 10, warning = TRUE}
 # correct variable class and customize as you like!
@@ -280,8 +279,8 @@ Here, we get the warning that two NA rows were removed in the making of this plo
 
 ```{r}
 # check structore of body_mass_g variable
-summary(penguins$body_mass_g)
-View(penguins) # confirms there are 2 NA values 
+summary(penguins$body_mass_g)  # see there are 2 NA values 
+View(penguins)                 # confirmed in dataset
 ```
 
 The `body_mass_g` variable has two missing values, so we are happy with the warning that let us know two rows were removed in the making of this figure. 
@@ -349,7 +348,7 @@ test_that("Test 4: NA values in order_boxplot function", {
 })
 ```
 
-Next, using `expect_is`, test that the function does indeed create an S3: gg object!
+Next, using `expect_is`, test that the function does indeed create an S3 gg object!
 
 ```{r}
 test_that("Test 5: return class type of order_boxplot function",{
