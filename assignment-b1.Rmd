@@ -266,7 +266,7 @@ penguins %>%
 
 Again, we receive the error that our categorical variable was not coded as categorical, but this time, as a factor. Correct this error and try again:
 
-```{r Fig 10, warning=FALSE}
+```{r Fig 10, warning = TRUE}
 # correct variable class and customize as you like!
 penguins %>%
   mutate(species = as.character(species)) %>%  # correct variable class
