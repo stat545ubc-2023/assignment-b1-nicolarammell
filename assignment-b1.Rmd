@@ -110,13 +110,13 @@ Next, I will add the documentation to the function.
 #' partially specified by the user and partially generated automatically based on
 #' the variable name from the dataframe.  
 #' 
-#' @param df     provide a dataframe (e.g. tibble)
-#' @param x      specify the categorical variable to be plotted
-#' @param y      specify the numeric variable to be plotted
+#' @param df     provide a dataframe (e.g. tibble), named df for dataframe
+#' @param x      specify the categorical x-variable to be plotted, named x
+#' @param y      specify the numeric y-variable to be plotted, named y
 #' @param title  provide a title that describes your categorical variable  
 #' 
 #' @return 
-#' This function will return a plot (an S3 gg object). 
+#' This function will return an ordered boxplot (an S3 gg object). 
 #' 
 #' @examples
 #' diamonds %>% 
